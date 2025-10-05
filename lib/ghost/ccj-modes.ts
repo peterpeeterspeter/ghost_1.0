@@ -135,6 +135,7 @@ export function buildCCJCore(
       bg: defaultHex,
       mode,
       show_interiors: showInteriors,
+      on_model_human: (mode === 'on_model'),  // NEW: hard lock for human models
       labels_lock: 'keep_legible_exact',
       authority: {
         geometry_texture: 'refs.primary',
@@ -142,6 +143,19 @@ export function buildCCJCore(
         scale_proportion: 'refs.aux|optional'
       }
     },
+
+    // NEW: model specification for on_model mode
+    ...(mode === 'on_model' ? {
+      model: {
+        role: "catalog_model",
+        ...DEFAULT_CASTING_PRESETS.neutral_female_S,  // Default to neutral female S
+        makeup: "minimal",
+        hands_visibility: "down-at-sides",
+        pose: "relaxed-upright-frontal",
+        expression: "neutral-friendly",
+        occlusion_policy: "keep-garment-unobstructed"
+      }
+    } : {}),
 
     refs: {
       primary: primaryFileUri,
@@ -331,12 +345,33 @@ export function buildHints(facts: FactsV3, control: ControlBlock, mode: RenderTy
   if (mode === 'on_model') {
     return {
       ...common,
-      view: '3d_frontal',
-      framing: { margin_pct: 8, center: true },
-      lighting: { studio_soft: true, white_balance: 'neutral' },
+      view: 'frontal_or_3_4',
+      framing: { center: true, margin_pct: 10, crop: 'knee-up-or-thigh-up' },
+      camera: { lens_equiv_mm: 70, height: 'chest', angle: 'slight-down-5deg' },
+      lighting: { studio_soft: true, key_fill_ratio: '1:1.5', avoid_hotspots: true },
       shadow: { style: 'contact_only', intensity: 'low' },
+      
+      // NEW: human-specific guidance
+      model_direction: {
+        stance: 'feet-hip-width, weight-centered',
+        arms: 'relaxed-at-sides (do not cover garment openings/print)',
+        hair_control: 'tucked-away-from-neckline',
+        gaze: 'to-camera or slight-off-camera',
+        micro_pose_variants: ['arms-slightly-back', 'one-foot-forward', 'chin-neutral']
+      },
+      
+      garment_visibility: {
+        keep_openings_clear: ['neckline','placket','hem','sleeve cuffs'],
+        avoid_occlusion_by: ['hair','hands','props','accessories']
+      },
+      
+      safety: { 
+        disallow: ['minors','sexualized_styling','see-through nudity'],
+        must_not: [...common.safety.must_not, 'digital_form']  // Override common safety
+      },
+      
       interior: { render_hollows: false },
-      notes: "Use exact geometry/color/texture from refs; do not fabricate absent elements."
+      notes: 'Human model catalog style: natural proportions, neutral styling, garment fully visible.'
     };
   }
 
@@ -366,11 +401,13 @@ Styling (hard): garment is PRESSED/STEAMED, lint-free, retail-styled with clean 
 Fidelity (hard): match colors, textures, patterns, and labels to the reference exactly. Do not invent.
 No humans, mannequins, props, environments, reflections, or added graphics/text.`.trim();
 
-export const SYSTEM_GM_ON_MODEL = `You are a commercial on-model product photographer. Return IMAGE ONLY.
-Defaults: pure #FFFFFF background, 3D frontal view, soft studio lighting, neutral white balance.
-Fidelity: match colors, textures, patterns, and labels exactly to references. Do not invent.
-No humans, mannequins, props, reflections, or added graphics/text.
-Render garment on digital form with realistic drape and proportions.`.trim();
+export const SYSTEM_GM_ON_MODEL = `You are a commercial on-model fashion photographer. Return IMAGE ONLY.
+
+Defaults: pure #FFFFFF (or light studio) background, 3/4 or frontal catalog pose, soft studio lighting, neutral white balance.
+Model: render an AI human model (adult) matching the requested profile. Natural proportions; non-sexualized; neutral expressions; minimal accessories unless specified.
+Fidelity: match garment colors, textures, seams, trims, logos exactly to references; do not invent.
+Occlusion: keep garment fully visible (no crossed arms/hair blocking key details); labels legible when present.
+Safety: no minors; no explicit nudity or fetish styling; respectful depiction.`.trim();
 
 export const SYSTEM_GM_VTON = `You are a commercial virtual try-on photographer. Return IMAGE ONLY.
 Defaults: match subject background, 3D frontal view, scene-consistent lighting.
@@ -380,6 +417,32 @@ Transfer garment realistically onto provided person reference.`.trim();
 
 // Legacy export for backward compatibility
 export const SYSTEM_GM = SYSTEM_GM_GHOST;
+
+// Default casting presets for human model diversity
+export const DEFAULT_CASTING_PRESETS = {
+  neutral_female_S: {
+    gender: "female", 
+    age_range: "25-35", 
+    body_size: "standard-S",
+    skin_tone: "neutral-medium", 
+    hair: { length: "shoulder", style: "clean", color: "brown" }
+  },
+  neutral_male_M: {
+    gender: "male", 
+    age_range: "25-35", 
+    body_size: "standard-M", 
+    skin_tone: "neutral-medium", 
+    hair: { length: "short", style: "clean", color: "brown" }
+  },
+  curve_female_XL: { 
+    gender: "female", 
+    body_size: "curve-XL" 
+  },
+  tall_male_L: { 
+    gender: "male", 
+    body_size: "tall" 
+  }
+};
 
 // Get system instruction based on mode
 export function getSystemInstruction(mode: RenderType): string {
@@ -432,9 +495,11 @@ OUTPUT: IMAGE ONLY.`.trim();
 
   if (mode === 'on_model') {
     return [
-      'TASK: Render a clean on-model look on a neutral background using a digital form (no humans).',
-      'Use the garment\'s true shape, drape, and proportions from the reference.',
-      'Fidelity (hard): preserve seams, stitching, trims, closures, and labels exactly; pure #FFFFFF background; clean edges.',
+      'TASK: Render the garment on an AI human model for a clean catalog look.',
+      'Authority: Use the first image as truth for geometry, texture, color, and print scale.',
+      'Model (hard): adult, neutral styling, catalog pose; keep garment fully visible.',
+      'Fidelity (hard): exact colors (hex), seams, stitching, trims, labels preserved; no invented graphics.',
+      'Background: white/light studio only; soft contact shadow.',
       'OUTPUT: IMAGE ONLY.'
     ].join('\n');
   }
@@ -503,8 +568,8 @@ export async function generateCCJRender(
     model: 'gemini-2.5-flash-image',
     generationConfig: {
       responseModalities: ['Image'],        // IMAGE only
-      temperature: 0.05,
-      seed: 7,                             // consistency for batch testing
+      temperature: mode === 'on_model' ? 0.1 : 0.05,  // slightly higher for natural faces/poses
+      seed: mode === 'on_model' ? 42 : 7,  // stable look across a series for on_model
       imageConfig: { aspectRatio }          // set via config, not text
     }
   });
