@@ -270,12 +270,61 @@ export function buildHints(facts: FactsV3, control: ControlBlock, mode: RenderTy
     return {
       ...common,
       view: 'top_down',
-      framing: { margin_pct: 6, center: true },
-      lighting: { soft_top_light: true, white_balance: 'neutral', avoid_hotspots: true },
+      framing: { margin_pct: 6, center: true, grid_align: true },
+      lighting: { soft_top_light: true, white_balance: 'neutral', avoid_hotspots: true, fill_ratio: 'even' },
       shadow: { style: 'none', intensity: 'none' },
+
+      // NEW: styling program and anti-crease policy
+      styling: {
+        pressed_or_steamed: true,             // force "finished" look
+        lint_free_cleanup: true,
+        retail_folds: true,
+        alignments: ['hem_straight','placket_straight','collar_symmetric','side_seams_parallel'],
+        sleeve_strategy: 'tuck_and_taper',    // neat sleeve taper instead of bunching
+        waistband_strategy: 'flatten_and_center',
+        hanger_marks_remove: true,
+        logo_face_up: 'as_seen'
+      },
+
+      crease_policy: {
+        allow_random_wrinkles: false,         // disallow random creases
+        keep_structural_folds_only: true,     // folds that define shape are OK
+        smooth_local_bunching: true,
+        edge_wave_tolerance_pct: 1.0          // tighten if needed
+      },
+
+      // Fabric-aware smoothing targets (uses analysis to stay realistic)
+      fabric_behavior: {
+        drape: facts?.fabric_behavior?.drape || 'as_seen',
+        stiffness_0_1: facts?.drape_stiffness ?? 0.35,
+        wrinkle_resistance: facts?.fabric_behavior?.wrinkle_resistance || 'moderate',
+        transparency: facts?.transparency || 'opaque',
+        surface_sheen: facts?.surface_sheen || 'matte',
+        microtexture: 'as_seen'
+      },
+
+      // Optional garment presets to reduce creases by type (reusable, garment-agnostic)
+      garment_presets: {
+        shirt: { button_policy: 'fully_buttoned', collar_roll: 'natural', sleeve_fold: 'single_minimal' },
+        trousers: { leg_alignment: 'parallel', rise_flatten: true, pocket_bag_hide: true },
+        dress: { bodice_flatten: true, skirt_sweep: 'gentle', belt_tidy: true },
+        knit_top: { cuff_taper: true, hem_dewave: true }
+      },
+
+      // QA gates (auto-retry if not neat)
+      qa: {
+        min_resolution_px: 2000,
+        symmetry_tol_pct: 2,
+        edge_halo_max_pct: 0.8,
+        // NEW wrinkle and alignment targets
+        max_random_crease_score: 0.15,        // demand low-crease look
+        hem_line_max_deviation_px: 2,         // keep hems straight
+        placket_max_curve_px: 2               // avoid bowing plackets
+      },
+
       // no interior hints in flatlay
       interior: undefined,
-      notes: "Use exact geometry/color/texture from refs; do not fabricate absent elements."
+      notes: 'Retail-styled flatlay: pressed/steamed, straightened edges, structural folds only; remove random creases.'
     };
   }
 
@@ -311,11 +360,11 @@ No humans, mannequins, props, reflections, gradients, or added text/graphics.
 If ambiguous, choose neutral e-commerce rendering that keeps all constraints true.`.trim();
 
 // Mode-specific system instructions
-export const SYSTEM_GM_FLATLAY = `You are a commercial flatlay product photographer. Return IMAGE ONLY.
-Defaults: pure #FFFFFF background, top-down camera angle, even soft lighting, neutral white balance.
-Fidelity: match colors, textures, patterns, and labels exactly to references. Do not invent.
-No humans, mannequins, props, reflections, shadows, or added graphics/text.
-Create neat, organized flatlay arrangement with clean edges.`.trim();
+export const SYSTEM_GM_FLATLAY = `You are a commercial FLATLAY product photographer. Return IMAGE ONLY.
+Defaults: pure #FFFFFF seamless; TOP-DOWN camera; soft, even top light; neutral white balance; centered framing.
+Styling (hard): garment is PRESSED/STEAMED, lint-free, retail-styled with clean retail folds and straightened hems/collars/sleeve lines.
+Fidelity (hard): match colors, textures, patterns, and labels to the reference exactly. Do not invent.
+No humans, mannequins, props, environments, reflections, or added graphics/text.`.trim();
 
 export const SYSTEM_GM_ON_MODEL = `You are a commercial on-model product photographer. Return IMAGE ONLY.
 Defaults: pure #FFFFFF background, 3D frontal view, soft studio lighting, neutral white balance.
@@ -369,10 +418,14 @@ OUTPUT: IMAGE ONLY.`.trim();
 
   if (mode === 'flatlay') {
     return [
-      'TASK: Create a high-end flatlay fashion product photo for e-commerce.',
-      'Style (hard): top-down camera; neatly arranged garment; NO mannequin volume; NO interior hollows.',
-      'Authority: first image is truth for geometry, texture, pattern, and color.',
-      'Fidelity (hard): pure #FFFFFF background; clean edges; preserve seams, stitching, trims, closures, labels exactly as seen.',
+      'TASK: Produce a HIGH-END FLATLAY e-commerce product photo.',
+      'Authority: the first image is the single source of truth for geometry, texture, pattern, and color.',
+      'Styling (hard): pressed/steamed finish; straighten hems, plackets, waistbands; align side seams; smooth random creases; keep only STRUCTURAL folds needed for a neat laydown; zero bunching.',
+      'Composition (hard): true top-down camera; centered; parallel edges; consistent margins.',
+      'Lighting (hard): soft, even top light; NO hotspots; neutral white balance.',
+      'Background (hard): pure #FFFFFF only; clean alpha edges (no halos).',
+      'Labels/prints (hard): preserve as seen; legible; do not relocate or invent text.',
+      'Shadows: none or ultra-soft contact only under thick trim—avoid visible cast shadows.',
       'OUTPUT: IMAGE ONLY.'
     ].join('\n');
   }
@@ -451,6 +504,7 @@ export async function generateCCJRender(
     generationConfig: {
       responseModalities: ['Image'],        // IMAGE only
       temperature: 0.05,
+      seed: 7,                             // consistency for batch testing
       imageConfig: { aspectRatio }          // set via config, not text
     }
   });
