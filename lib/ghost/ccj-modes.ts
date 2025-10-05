@@ -372,15 +372,19 @@ export async function prepareImageForModeRender(
   sessionId: string
 ): Promise<string> {
   try {
+    console.log('📤 Uploading to Files API...');
     const filesUri = await toFilesURI(imageInput, 'image/jpeg');
+    
     if (filesUri.startsWith('https://generativelanguage.googleapis.com/v1beta/files/')) {
+      console.log('✅ Using Files API URI (0 input tokens)');
       return filesUri;
     } else {
-      // Fallback to base64
+      console.log('⚠️ Files API failed, using base64 fallback');
       return filesUri;
     }
   } catch (error) {
     console.warn('Files API upload failed, using base64 fallback:', error);
+    
     // Convert to base64 data URI
     const fs = await import('fs');
     const path = await import('path');
@@ -388,6 +392,7 @@ export async function prepareImageForModeRender(
     if (fs.existsSync(imageInput)) {
       const buffer = fs.readFileSync(imageInput);
       const base64 = buffer.toString('base64');
+      console.log('📄 Using base64 encoding (high token usage)');
       return `data:image/jpeg;base64,${base64}`;
     }
     

@@ -1,0 +1,109 @@
+{
+  "mode": "vton",
+  "ccjCore": {
+    "v": "gm-ccj-1.3",
+    "id": "ccj-files-ap",
+    "category": "shirt",
+    "silhouette": "classic-collar-long-sleeve",
+    "pattern": "solid",
+    "colors_hex": [
+      "#2E5BBA",
+      "#FFFFFF"
+    ],
+    "parts": {
+      "openings": [
+        "neckline",
+        "cuffs",
+        "hem"
+      ],
+      "closures": "as_seen",
+      "trims": "as_seen",
+      "pockets": "as_seen"
+    },
+    "proportions": {
+      "symmetry_tol_pct": 3,
+      "framing_margin_pct": 6
+    },
+    "rules": {
+      "bg": "#FFFFFF",
+      "mode": "vton",
+      "show_interiors": false,
+      "labels_lock": "keep_legible_exact",
+      "authority": {
+        "geometry_texture": "refs.primary",
+        "color_source": "refs.primary",
+        "scale_proportion": "refs.aux|optional"
+      }
+    },
+    "refs": {
+      "primary": "https://generativelanguage.googleapis.com/v1beta/files/pw3sb879vd1k",
+      "aux": []
+    }
+  },
+  "ccjHints": {
+    "v": "gm-hints-1.3",
+    "color_precision": {
+      "primary_hex": "#2E5BBA",
+      "secondary_hex": "#FFFFFF",
+      "deltaE_max": 3,
+      "saturation_bias": "neutral"
+    },
+    "material": {},
+    "fabric_behavior": {
+      "drape": "as_seen",
+      "stiffness_0_1": 0.35,
+      "transparency": "opaque",
+      "surface_sheen": "matte",
+      "microtexture": "as_seen"
+    },
+    "construction": {
+      "seams": "preserve",
+      "edge_finish": "standard",
+      "closures": "as_seen",
+      "hardware": "as_seen",
+      "topstitching": "preserve",
+      "print_scale": "as_seen"
+    },
+    "labels": {
+      "visible": "preserve",
+      "ocr_text": "do_not_invent",
+      "known_texts": [
+        "HEMD BRAND"
+      ],
+      "critical": "yes"
+    },
+    "qa": {
+      "min_resolution_px": 2000,
+      "symmetry_tol_pct": 3,
+      "edge_halo_max_pct": 1
+    },
+    "safety": {
+      "must_not": [
+        "mannequins",
+        "humans",
+        "props",
+        "reflections"
+      ]
+    },
+    "view": "3d_frontal",
+    "framing": {
+      "margin_pct": 8,
+      "center": true
+    },
+    "lighting": {
+      "studio_soft": true,
+      "white_balance": "match_subject"
+    },
+    "shadow": {
+      "style": "scene_consistent",
+      "intensity": "match_subject"
+    },
+    "interior": {
+      "render_hollows": false
+    },
+    "notes": "VTO: transfer garment onto provided person reference; preserve scale & material behavior."
+  },
+  "renderInstruction": "TASK: Transfer the analyzed garment onto the provided person reference realistically.\nMatch scale, fabric behavior, and lighting to the subject; avoid distortions and artifacts.\nFidelity (hard): preserve garment details and colors; keep background minimal/neutral unless the subject requires.\nOUTPUT: IMAGE ONLY.",
+  "partsCount": 5,
+  "tokenOptimization": "Files API (0 tokens)"
+}

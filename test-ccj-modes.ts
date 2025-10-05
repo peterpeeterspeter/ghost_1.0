@@ -3,11 +3,15 @@
 import { 
   generateCCJRender, 
   prepareImageForModeRender,
+  buildCCJCore,
+  buildHints,
+  buildRenderInstruction,
   type FactsV3, 
   type ControlBlock,
   type RenderType 
 } from './lib/ghost/ccj-modes';
 import { configureFalClient } from './lib/ghost/fal';
+import { configureFilesManager } from './lib/ghost/files-manager';
 import path from 'path';
 import fs from 'fs';
 
@@ -33,6 +37,11 @@ async function testAllModes() {
     if (!process.env.GEMINI_API_KEY) {
       throw new Error('GEMINI_API_KEY is not set.');
     }
+
+    // Configure Files Manager for optimal token usage
+    console.log('🔧 Configuring Files Manager...');
+    configureFilesManager(process.env.GEMINI_API_KEY);
+    console.log('✅ Files Manager configured - Files API ready for 0 token usage');
 
     // Sample facts for hemd shirt (consistent across modes)
     const facts: FactsV3 = {
@@ -114,13 +123,13 @@ async function testAllModes() {
       ban: ['mannequins', 'humans', 'props', 'reflections', 'long_shadows']
     };
 
-    // Prepare image for Files API
+    // Prepare image for Files API (optimized token usage)
     console.log('\n📤 Preparing image for Files API...');
     const primaryFileUri = await prepareImageForModeRender(imagePath, 'mode-test');
-    console.log('✅ Image prepared:', primaryFileUri.startsWith('https://') ? 'Files API URI' : 'Base64 fallback');
+    console.log('✅ Image prepared:', primaryFileUri.startsWith('https://') ? 'Files API URI (0 tokens)' : 'Base64 fallback (high tokens)');
 
     // Test all render modes
-    const modes: RenderType[] = ['ghost', 'flatlay', 'on_model'];
+    const modes: RenderType[] = ['ghost', 'flatlay', 'on_model', 'vton'];
     const results = [];
 
     for (const mode of modes) {
