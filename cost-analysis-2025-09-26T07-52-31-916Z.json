@@ -1,0 +1,149 @@
+{
+  "timestamp": "2025-09-26T07:52:31.919Z",
+  "analysis": {
+    "filesApiUsage": {
+      "totalFiles": 10,
+      "totalSizeGB": "0.0012",
+      "totalSizeMB": "1.2",
+      "averageFileSizeMB": "0.12",
+      "storageSpanDays": 1,
+      "oldestFileAge": 1,
+      "estimatedStorageCostUSD": "0.000000"
+    },
+    "potentialCostSources": [
+      {
+        "source": "Code Pattern: High retry counts can multiply costs",
+        "risk": "MEDIUM",
+        "details": "Found in lib/ghost/gemini.ts: \"64\"",
+        "estimatedCost": "Up to 10x cost multiplication",
+        "file": "lib/ghost/gemini.ts",
+        "matchCount": 64
+      },
+      {
+        "source": "Code Pattern: High retry counts can multiply costs",
+        "risk": "MEDIUM",
+        "details": "Found in lib/ghost/ai-studio.ts: \"64\"",
+        "estimatedCost": "Up to 10x cost multiplication",
+        "file": "lib/ghost/ai-studio.ts",
+        "matchCount": 92
+      },
+      {
+        "source": "Code Pattern: High retry counts can multiply costs",
+        "risk": "MEDIUM",
+        "details": "Found in lib/ghost/pipeline.ts: \"30\"",
+        "estimatedCost": "Up to 10x cost multiplication",
+        "file": "lib/ghost/pipeline.ts",
+        "matchCount": 14
+      },
+      {
+        "source": "Code Pattern: High retry counts can multiply costs",
+        "risk": "MEDIUM",
+        "details": "Found in app/api/ghost/route.ts: \"30\"",
+        "estimatedCost": "Up to 10x cost multiplication",
+        "file": "app/api/ghost/route.ts",
+        "matchCount": 63
+      },
+      {
+        "source": "Code Pattern: High retry counts can multiply costs",
+        "risk": "MEDIUM",
+        "details": "Found in lib/ghost/freepik.ts: \"64\"",
+        "estimatedCost": "Up to 10x cost multiplication",
+        "file": "lib/ghost/freepik.ts",
+        "matchCount": 108
+      },
+      {
+        "source": "Code Pattern: Base64 images in prompts = massive token usage",
+        "risk": "HIGH",
+        "details": "Found in lib/ghost/freepik.ts: \"data:image/png;base64,\"",
+        "estimatedCost": "50K-200K tokens per image",
+        "file": "lib/ghost/freepik.ts",
+        "matchCount": 1
+      }
+    ],
+    "billingDelayFactors": [
+      {
+        "factor": "Google Cloud Billing Lag",
+        "description": "Google typically has 1-3 day billing delays for API usage",
+        "likelihood": "VERY HIGH",
+        "impact": "Costs from 1-3 days ago showing up now"
+      },
+      {
+        "factor": "Files API Storage Charges",
+        "description": "Storage costs accumulate daily and may not show immediately",
+        "likelihood": "HIGH",
+        "impact": "Daily storage fees for uploaded files"
+      },
+      {
+        "factor": "Token Usage Batching",
+        "description": "Large token usage may be processed/billed in batches",
+        "likelihood": "MEDIUM",
+        "impact": "Multiple requests batched into single larger charge"
+      },
+      {
+        "factor": "Failed Request Charges",
+        "description": "Partial processing of failed requests may still incur costs",
+        "likelihood": "MEDIUM",
+        "impact": "Charges for failed but partially processed requests"
+      },
+      {
+        "factor": "Regional Pricing Differences",
+        "description": "Different regions may have different pricing tiers",
+        "likelihood": "LOW",
+        "impact": "Higher rates in certain geographic regions"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "CRITICAL",
+        "action": "Switch to cheaper models",
+        "description": "Use gemini-2.0-flash-lite instead of Pro models",
+        "potentialSavings": "80-90% on token costs",
+        "implementation": "Update model names in your code"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Implement aggressive Files API cleanup",
+        "description": "Delete files immediately after use, not after sessions",
+        "potentialSavings": "90%+ on storage costs",
+        "implementation": "Set cleanup to 1-2 hours instead of 24 hours"
+      },
+      {
+        "priority": "HIGH",
+        "action": "Add request logging and monitoring",
+        "description": "Log every API call with token usage and costs",
+        "potentialSavings": "Cost visibility and spike detection",
+        "implementation": "Add detailed logging to all API calls"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Implement request queuing",
+        "description": "Prevent concurrent requests that multiply costs",
+        "potentialSavings": "50-80% during development",
+        "implementation": "Add request queue/throttling"
+      },
+      {
+        "priority": "MEDIUM",
+        "action": "Add cost circuit breakers",
+        "description": "Stop processing if costs exceed daily limits",
+        "potentialSavings": "Prevents runaway costs",
+        "implementation": "Check estimated costs before each API call"
+      },
+      {
+        "priority": "LOW",
+        "action": "Optimize image compression",
+        "description": "Use more aggressive compression to reduce token usage",
+        "potentialSavings": "10-20% on token costs",
+        "implementation": "Lower quality settings, smaller max dimensions"
+      }
+    ],
+    "recentActivity": {
+      "foundLogs": false,
+      "highVolumeActivity": false,
+      "suspiciousPatterns": []
+    }
+  },
+  "metadata": {
+    "version": "1.0",
+    "generatedBy": "ghost-mannequin-cost-analyzer"
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "type": "garment_analysis",
+  "meta": {
+    "schema_version": "4.1",
+    "session_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+  },
+  "labels_found": [
+    {
+      "type": "brand",
+      "location": "inside neck tag",
+      "bbox_norm": [0.45, 0.12, 0.55, 0.18],
+      "text": "Nike",
+      "ocr_conf": 0.95,
+      "readable": true,
+      "preserve": true,
+      "visibility": "fully_visible",
+      "print_type": "woven_label",
+      "color_hex": "#ffffff",
+      "orientation_degrees": 0
+    },
+    {
+      "type": "size",
+      "location": "inside neck tag",
+      "bbox_norm": [0.42, 0.19, 0.58, 0.25],
+      "text": "M",
+      "ocr_conf": 0.98,
+      "readable": true,
+      "preserve": true,
+      "visibility": "fully_visible",
+      "print_type": "woven_label",
+      "color_hex": "#ffffff",
+      "orientation_degrees": 0
+    },
+    {
+      "type": "care",
+      "location": "left side seam",
+      "bbox_norm": [0.05, 0.35, 0.15, 0.45],
+      "text": "Machine wash cold",
+      "ocr_conf": 0.85,
+      "readable": true,
+      "preserve": false,
+      "visibility": "partially_occluded",
+      "print_type": "satin_tag"
+    }
+  ],
+  "preserve_details": [
+    {
+      "element": "Nike Swoosh Logo",
+      "priority": "critical",
+      "location": "left chest area",
+      "region_bbox_norm": [0.15, 0.25, 0.25, 0.35],
+      "notes": "Embroidered logo in contrasting white thread",
+      "material_notes": "Raised embroidery with slight sheen"
+    },
+    {
+      "element": "Contrast stitching",
+      "priority": "important",
+      "location": "shoulder seams and armholes",
+      "region_bbox_norm": [0.20, 0.15, 0.80, 0.40],
+      "notes": "White topstitching on navy fabric creates visual accent",
+      "material_notes": "Standard polyester thread, matte finish"
+    },
+    {
+      "element": "Ribbed collar",
+      "priority": "important",
+      "location": "neckline",
+      "region_bbox_norm": [0.35, 0.10, 0.65, 0.20],
+      "notes": "2x2 rib knit collar maintains shape and structure"
+    }
+  ],
+  "hollow_regions": [
+    {
+      "region_type": "neckline",
+      "keep_hollow": true,
+      "inner_visible": false,
+      "inner_description": "Standard crew neck opening",
+      "edge_sampling_notes": "Clean edge with ribbed collar attachment"
+    },
+    {
+      "region_type": "sleeves",
+      "keep_hollow": true,
+      "inner_visible": false,
+      "edge_sampling_notes": "Finished with hemmed cuffs"
+    }
+  ],
+  "construction_details": [
+    {
+      "feature": "Set-in sleeves",
+      "silhouette_rule": "Maintain natural shoulder line and armpit curve",
+      "critical_for_structure": true
+    },
+    {
+      "feature": "Side seams",
+      "silhouette_rule": "Preserve body contour with slight tapering",
+      "critical_for_structure": true
+    },
+    {
+      "feature": "Bottom hem",
+      "silhouette_rule": "Straight hem line with natural drape",
+      "critical_for_structure": false
+    }
+  ],
+  "image_b_priority": {
+    "is_ground_truth": true,
+    "edge_fidelity_required": true,
+    "print_direction_notes": "Logo and text oriented correctly for front view",
+    "color_authority": true
+  },
+  "special_handling": "Athletic wear with performance fabric - maintain moisture-wicking texture appearance. Logo embroidery critical for brand recognition."
+}

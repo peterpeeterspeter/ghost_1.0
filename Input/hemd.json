@@ -1,0 +1,90 @@
+{
+  "type": "garment_analysis",
+  "meta": {
+    "schema_version": "4.1",
+    "session_id": "a7b3c9d1-f2e4-4a1b-8d6c-5e9f0a2b1c8d"
+  },
+  "labels_found": [
+    {
+      "type": "brand",
+      "location": "inside_back_neck",
+      "readable": true,
+      "preserve": true,
+      "bbox_norm": [
+        0.4548,
+        0.214,
+        0.5393,
+        0.2411
+      ],
+      "ocr_conf": 0.97,
+      "text": "Boho Style",
+      "visibility": "fully_visible"
+    }
+  ],
+  "preserve_details": [
+    {
+      "element": "fringe_trim",
+      "priority": "critical",
+      "location": "front_opening_and_collar",
+      "notes": "A prominent brown and white braided fringe trim lines the entire front opening and collar. This is a key textural and design element that must be preserved.",
+      "region_bbox_norm": [
+        0.361,
+        0.1819,
+        0.638,
+        0.882
+      ]
+    },
+    {
+      "element": "print",
+      "priority": "critical",
+      "location": "entire_garment",
+      "notes": "The garment is made of a multi-patterned fabric, likely a block print style. The integrity, color, and arrangement of the different patterns (geometric, floral, abstract) are essential to the garment's aesthetic."
+    },
+    {
+      "element": "sleeve_cuff",
+      "priority": "important",
+      "location": "sleeve_openings",
+      "notes": "The sleeves have wide, distinct cuffs formed by folding the fabric back. The structure and pattern continuity on the cuffs should be maintained.",
+      "region_bbox_norm": [
+        0.7607,
+        0.354,
+        0.975,
+        0.518
+      ]
+    }
+  ],
+  "construction_details": [
+    {
+      "feature": "open_front",
+      "silhouette_rule": "This is an open-front kimono-style jacket with no closures. The front panels should hang loosely and symmetrically.",
+      "critical_for_structure": true
+    },
+    {
+      "feature": "kimono_sleeves",
+      "silhouette_rule": "The sleeves are wide and cut straight, contributing to the garment's boxy and relaxed fit. Their shape and volume should be preserved.",
+      "critical_for_structure": true
+    },
+    {
+      "feature": "shawl_collar",
+      "silhouette_rule": "The collar is a continuous band that extends down the front opening. It should lay relatively flat against the body.",
+      "critical_for_structure": true
+    }
+  ],
+  "hollow_regions": [
+    {
+      "region_type": "front_opening",
+      "keep_hollow": true,
+      "edge_sampling_notes": "The edge is defined by the textured fringe trim. Capture the detail of the braid and tassels.",
+      "inner_description": "The inner back of the garment is visible, showing a cream and blue geometric pattern.",
+      "inner_visible": true
+    },
+    {
+      "region_type": "sleeves",
+      "keep_hollow": true,
+      "edge_sampling_notes": "The sleeve opening edge is a clean, hemmed cuff. The pattern wraps around the edge.",
+      "inner_description": "The inside of the sleeve cuff is visible, showing the reverse side of the fabric.",
+      "inner_visible": true
+    }
+  ],
+  "special_handling": "The garment has a very loose, unstructured, and flowy silhouette typical of a kimono or duster jacket. It is crucial to maintain this natural drape. The complex, multi-pattern print and the fringe trim are the most important visual features and must be preserved with high fidelity."
+}

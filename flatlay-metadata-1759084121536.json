@@ -1,0 +1,13 @@
+{
+  "model": "gemini-2.5-flash-image-preview",
+  "style": "commercial",
+  "background": "white",
+  "lighting": "studio",
+  "composition": "centered",
+  "cachedAnalysisUsed": false,
+  "analysisProcessingTime": 1519,
+  "enrichmentProcessingTime": 3092,
+  "consolidationProcessingTime": 41,
+  "renderingProcessingTime": 7752,
+  "promptLength": "Optimized consolidated prompt (1654 data chars)"
+}

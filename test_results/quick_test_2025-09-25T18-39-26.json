@@ -1,0 +1,11 @@
+{
+  "startTime": "2025-09-25T18:53:00Z",
+  "endTime": "2025-09-25T18:53:00Z",
+  "totalTests": 5,
+  "summary": {
+    "successful": 5,
+    "failed": 0,
+    "averageProcessingTime": 162800,
+    "totalProcessingTime": 814000
+  }
+}

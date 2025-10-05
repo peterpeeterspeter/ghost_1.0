@@ -1,0 +1,114 @@
+{
+  "type": "garment_analysis",
+  "meta": {
+    "schema_version": "4.1",
+    "session_id": "e8a1c2b3-d4e5-f6a7-b8c9-d0e1f2a3b4c5"
+  },
+  "labels_found": [
+    {
+      "type": "brand",
+      "location": "Inside, back of the neck",
+      "readable": true,
+      "preserve": true,
+      "bbox_norm": [
+        0.494,
+        0.264,
+        0.52,
+        0.29
+      ],
+      "ocr_conf": 0.95,
+      "text": "C&A",
+      "visibility": "fully_visible"
+    }
+  ],
+  "preserve_details": [
+    {
+      "element": "Metal tack buttons",
+      "priority": "critical",
+      "location": "Front placket, chest pockets, and cuffs",
+      "notes": "Standard silver-colored metal tack buttons are a key feature of the denim jacket style.",
+      "region_bbox_norm": [
+        0.52,
+        0.42,
+        0.535,
+        0.83
+      ]
+    },
+    {
+      "element": "Denim wash and texture",
+      "priority": "critical",
+      "location": "Entire garment",
+      "notes": "The light-to-medium blue wash with fading and the characteristic denim twill texture are essential to the garment's appearance."
+    },
+    {
+      "element": "Stitching",
+      "priority": "important",
+      "location": "Throughout garment",
+      "notes": "Tonal or slightly contrasting stitching defines the seams, pockets, placket, and collar, which is characteristic of denim jackets."
+    },
+    {
+      "element": "Flap chest pockets",
+      "priority": "important",
+      "location": "Front chest",
+      "notes": "Two classic button-flap pockets on the chest are a defining feature of the jacket's style.",
+      "region_bbox_norm": [
+        0.33,
+        0.4,
+        0.68,
+        0.55
+      ]
+    },
+    {
+      "element": "Decorative pin",
+      "priority": "nice_to_have",
+      "location": "Left chest pocket flap",
+      "notes": "A small, colorful pin with a heart design is attached to the pocket flap. This may be a user addition and not part of the original product.",
+      "region_bbox_norm": [
+        0.61,
+        0.42,
+        0.625,
+        0.44
+      ]
+    }
+  ],
+  "construction_details": [
+    {
+      "feature": "Trucker jacket construction",
+      "silhouette_rule": "The jacket should have a structured, slightly boxy silhouette. Key features include a point collar, front button placket, chest pockets, and vertical front seams.",
+      "critical_for_structure": true
+    },
+    {
+      "feature": "Set-in sleeves",
+      "silhouette_rule": "The sleeves are attached at a standard armhole, and the seam should be clearly visible.",
+      "critical_for_structure": true
+    },
+    {
+      "feature": "Buttoned cuffs",
+      "silhouette_rule": "The sleeve cuffs are finished with a placket and a button, which should be visible.",
+      "critical_for_structure": true
+    },
+    {
+      "feature": "Waistband hem",
+      "silhouette_rule": "The jacket has a distinct band of denim at the bottom hem, creating a clean, structured finish.",
+      "critical_for_structure": true
+    }
+  ],
+  "hollow_regions": [
+    {
+      "region_type": "neckline",
+      "keep_hollow": true,
+      "inner_visible": true
+    },
+    {
+      "region_type": "sleeves",
+      "keep_hollow": true,
+      "inner_visible": false
+    },
+    {
+      "region_type": "front_opening",
+      "keep_hollow": true,
+      "inner_visible": true
+    }
+  ],
+  "special_handling": "The primary focus should be on preserving the authentic look of the denim, including its color variations, fading, and texture. The jacket is unbuttoned, so the interior placket and back yoke lining should be rendered correctly."
+}

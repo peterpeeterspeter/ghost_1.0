@@ -1,0 +1,57 @@
+{
+  "name": "ghost-mannequin-pipeline",
+  "version": "1.0.0",
+  "description": "Production-ready AI pipeline for generating high-quality ghost mannequin product images with interior hollows and label preservation",
+  "main": "lib/ghost/ccj-improved.ts",
+  "type": "module",
+  "scripts": {
+    "test": "npx tsx test-ccj-improved-v1-2.ts",
+    "test:batch": "npx tsx test-ccj-batch-10.ts",
+    "test:single": "npx tsx test-ccj-improved-v1-2.ts",
+    "build": "tsc",
+    "dev": "npx tsx --watch lib/ghost/ccj-improved.ts",
+    "clean": "rm -f *.png *.json && rm -f test-*-result-* test-*-data-*"
+  },
+  "keywords": [
+    "ai",
+    "image-generation",
+    "ghost-mannequin",
+    "product-photography",
+    "e-commerce",
+    "gemini",
+    "fal-ai",
+    "files-api",
+    "ccj",
+    "pipeline"
+  ],
+  "author": "Peter",
+  "license": "PRIVATE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peter/ghost-1.0.git"
+  },
+  "bugs": {
+    "url": "https://github.com/peter/ghost-1.0/issues"
+  },
+  "homepage": "https://github.com/peter/ghost-1.0#readme",
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "sharp": "^0.33.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "lib/",
+    "README.md",
+    "CHANGELOG.md",
+    "CCJ_IMPROVEMENTS.md",
+    "package.json"
+  ]
+}

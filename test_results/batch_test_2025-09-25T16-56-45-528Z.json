@@ -1,0 +1,313 @@
+{
+  "startTime": "2025-09-25T16:56:45.529Z",
+  "totalTests": 50,
+  "tests": [
+    {
+      "testNumber": 1,
+      "timestamp": "2025-09-25T16:56:45.530Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 2,
+      "timestamp": "2025-09-25T16:56:45.531Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 3,
+      "timestamp": "2025-09-25T16:56:45.531Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 4,
+      "timestamp": "2025-09-25T16:56:45.531Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 5,
+      "timestamp": "2025-09-25T16:56:45.533Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 6,
+      "timestamp": "2025-09-25T16:56:45.533Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 7,
+      "timestamp": "2025-09-25T16:56:45.533Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 8,
+      "timestamp": "2025-09-25T16:56:45.533Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 9,
+      "timestamp": "2025-09-25T16:56:45.533Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 10,
+      "timestamp": "2025-09-25T16:56:45.533Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 11,
+      "timestamp": "2025-09-25T16:56:45.533Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 12,
+      "timestamp": "2025-09-25T16:56:45.534Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 13,
+      "timestamp": "2025-09-25T16:56:45.534Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 14,
+      "timestamp": "2025-09-25T16:56:45.534Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 15,
+      "timestamp": "2025-09-25T16:56:45.534Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 16,
+      "timestamp": "2025-09-25T16:56:45.534Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 17,
+      "timestamp": "2025-09-25T16:56:45.534Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 18,
+      "timestamp": "2025-09-25T16:56:45.534Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 19,
+      "timestamp": "2025-09-25T16:56:45.534Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 20,
+      "timestamp": "2025-09-25T16:56:45.534Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 21,
+      "timestamp": "2025-09-25T16:56:45.534Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 22,
+      "timestamp": "2025-09-25T16:56:45.535Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 23,
+      "timestamp": "2025-09-25T16:56:45.535Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 24,
+      "timestamp": "2025-09-25T16:56:45.535Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 25,
+      "timestamp": "2025-09-25T16:56:45.535Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 26,
+      "timestamp": "2025-09-25T16:56:45.535Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 27,
+      "timestamp": "2025-09-25T16:56:45.535Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 28,
+      "timestamp": "2025-09-25T16:56:45.535Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 29,
+      "timestamp": "2025-09-25T16:56:45.535Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 30,
+      "timestamp": "2025-09-25T16:56:45.536Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 31,
+      "timestamp": "2025-09-25T16:56:45.536Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 32,
+      "timestamp": "2025-09-25T16:56:45.536Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 33,
+      "timestamp": "2025-09-25T16:56:45.536Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 34,
+      "timestamp": "2025-09-25T16:56:45.536Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 35,
+      "timestamp": "2025-09-25T16:56:45.537Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 36,
+      "timestamp": "2025-09-25T16:56:45.537Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 37,
+      "timestamp": "2025-09-25T16:56:45.537Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 38,
+      "timestamp": "2025-09-25T16:56:45.537Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 39,
+      "timestamp": "2025-09-25T16:56:45.537Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 40,
+      "timestamp": "2025-09-25T16:56:45.537Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 41,
+      "timestamp": "2025-09-25T16:56:45.537Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 42,
+      "timestamp": "2025-09-25T16:56:45.537Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 43,
+      "timestamp": "2025-09-25T16:56:45.538Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 44,
+      "timestamp": "2025-09-25T16:56:45.538Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 45,
+      "timestamp": "2025-09-25T16:56:45.538Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 46,
+      "timestamp": "2025-09-25T16:56:45.538Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 47,
+      "timestamp": "2025-09-25T16:56:45.538Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 48,
+      "timestamp": "2025-09-25T16:56:45.538Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 49,
+      "timestamp": "2025-09-25T16:56:45.538Z",
+      "success": false,
+      "error": "fetch is not a function"
+    },
+    {
+      "testNumber": 50,
+      "timestamp": "2025-09-25T16:56:45.538Z",
+      "success": false,
+      "error": "fetch is not a function"
+    }
+  ],
+  "summary": {
+    "successful": 0,
+    "failed": 50,
+    "averageProcessingTime": 0,
+    "totalProcessingTime": 0
+  },
+  "endTime": "2025-09-25T16:56:45.539Z"
+}

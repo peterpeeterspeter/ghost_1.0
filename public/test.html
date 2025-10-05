@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Mannequin Pipeline Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .input-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            border: 2px dashed #ddd;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .input-group h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        input[type="url"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            color: #666;
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Ghost Mannequin Pipeline Tester</h1>
+        <p>Test your ghost mannequin pipeline with real images. Upload images or provide URLs.</p>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <h3>📸 Flatlay Image (Garment Detail)</h3>
+                <input type="file" id="flatlayFile" accept="image/*">
+                <p>OR</p>
+                <input type="url" id="flatlayUrl" placeholder="https://example.com/flatlay.jpg">
+                <div id="flatlayPreview"></div>
+            </div>
+            
+            <div class="input-group">
+                <h3>👤 On-Model Image</h3>
+                <input type="file" id="onModelFile" accept="image/*">
+                <p>OR</p>
+                <input type="url" id="onModelUrl" placeholder="https://example.com/onmodel.jpg">
+                <div id="onModelPreview"></div>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button onclick="processImages()">🚀 Generate Ghost Mannequin</button>
+            <button onclick="clearAll()">🗑️ Clear All</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <h3>⏳ Processing...</h3>
+            <p>This may take 30-60 seconds. Please wait...</p>
+            <progress style="width: 100%;"></progress>
+        </div>
+        
+        <div class="results" id="results" style="display: none;">
+            <h3>📊 Results</h3>
+            <div id="resultContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let flatlayData = null;
+        let onModelData = null;
+
+        // File input handlers
+        document.getElementById('flatlayFile').addEventListener('change', function(e) {
+            handleFileSelect(e.target.files[0], 'flatlay');
+        });
+        
+        document.getElementById('onModelFile').addEventListener('change', function(e) {
+            handleFileSelect(e.target.files[0], 'onModel');
+        });
+
+        // URL input handlers
+        document.getElementById('flatlayUrl').addEventListener('change', function(e) {
+            if (e.target.value) {
+                flatlayData = e.target.value;
+                showUrlPreview(e.target.value, 'flatlayPreview');
+            }
+        });
+        
+        document.getElementById('onModelUrl').addEventListener('change', function(e) {
+            if (e.target.value) {
+                onModelData = e.target.value;
+                showUrlPreview(e.target.value, 'onModelPreview');
+            }
+        });
+
+        function handleFileSelect(file, type) {
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const dataUrl = e.target.result;
+                    if (type === 'flatlay') {
+                        flatlayData = dataUrl;
+                        showImagePreview(dataUrl, 'flatlayPreview');
+                    } else {
+                        onModelData = dataUrl;
+                        showImagePreview(dataUrl, 'onModelPreview');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function showImagePreview(dataUrl, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<img src="${dataUrl}" class="image-preview" alt="Preview">`;
+        }
+        
+        function showUrlPreview(url, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<img src="${url}" class="image-preview" alt="Preview" onerror="this.style.display='none'">`;
+        }
+
+        async function processImages() {
+            if (!flatlayData) {
+                alert('Please provide a flatlay image (file or URL)');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+
+            const requestData = {
+                flatlay: flatlayData
+            };
+            
+            if (onModelData) {
+                requestData.onModel = onModelData;
+            }
+
+            try {
+                const response = await fetch('/api/ghost', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const result = await response.json();
+                
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                
+                // Show results
+                displayResults(result);
+                
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                displayError('Error: ' + error.message);
+            }
+        }
+
+        function displayResults(result) {
+            const resultsDiv = document.getElementById('results');
+            const contentDiv = document.getElementById('resultContent');
+            
+            if (result.status === 'completed') {
+                contentDiv.innerHTML = `
+                    <div class="success">✅ Processing completed successfully!</div>
+                    <p><strong>Session ID:</strong> ${result.sessionId}</p>
+                    <p><strong>Processing Time:</strong> ${result.metrics.processingTime}</p>
+                    
+                    <h4>📸 Generated Images:</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                        ${result.cleanedImageUrl ? `
+                        <div>
+                            <h5>Cleaned Flatlay</h5>
+                            <img src="${result.cleanedImageUrl}" style="max-width: 100%; border: 1px solid #ddd;">
+                            <br><a href="${result.cleanedImageUrl}" target="_blank">Open in new tab</a>
+                        </div>` : ''}
+                        
+                        ${result.cleanedOnModelUrl ? `
+                        <div>
+                            <h5>Cleaned On-Model</h5>
+                            <img src="${result.cleanedOnModelUrl}" style="max-width: 100%; border: 1px solid #ddd;">
+                            <br><a href="${result.cleanedOnModelUrl}" target="_blank">Open in new tab</a>
+                        </div>` : ''}
+                        
+                        ${result.renderUrl ? `
+                        <div>
+                            <h5>🎯 Ghost Mannequin Result</h5>
+                            <img src="${result.renderUrl}" style="max-width: 100%; border: 1px solid #ddd;">
+                            <br><a href="${result.renderUrl}" target="_blank">Open in new tab</a>
+                        </div>` : ''}
+                    </div>
+                    
+                    <h4>⏱️ Stage Timings:</h4>
+                    <ul>
+                        <li>Background Removal: ${result.metrics.stageTimings.backgroundRemoval}ms</li>
+                        <li>Analysis: ${result.metrics.stageTimings.analysis}ms</li>
+                        <li>Rendering: ${result.metrics.stageTimings.rendering}ms</li>
+                    </ul>
+                `;
+            } else {
+                contentDiv.innerHTML = `
+                    <div class="error">❌ Processing failed</div>
+                    <p><strong>Status:</strong> ${result.status}</p>
+                    ${result.error ? `<p><strong>Error:</strong> ${result.error.message}</p>` : ''}
+                `;
+            }
+            
+            resultsDiv.style.display = 'block';
+        }
+
+        function displayError(message) {
+            const resultsDiv = document.getElementById('results');
+            const contentDiv = document.getElementById('resultContent');
+            
+            contentDiv.innerHTML = `<div class="error">${message}</div>`;
+            resultsDiv.style.display = 'block';
+        }
+
+        function clearAll() {
+            // Clear file inputs
+            document.getElementById('flatlayFile').value = '';
+            document.getElementById('onModelFile').value = '';
+            document.getElementById('flatlayUrl').value = '';
+            document.getElementById('onModelUrl').value = '';
+            
+            // Clear previews
+            document.getElementById('flatlayPreview').innerHTML = '';
+            document.getElementById('onModelPreview').innerHTML = '';
+            
+            // Clear data
+            flatlayData = null;
+            onModelData = null;
+            
+            // Hide results
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
