@@ -15,9 +15,9 @@ import { configureFilesManager } from './lib/ghost/files-manager';
 import path from 'path';
 import fs from 'fs';
 
-async function testAllModes() {
-  console.log('🚀 Testing CCJ Mode-Aware Render Layer');
-  console.log('=====================================');
+async function testAllModesEncinitas() {
+  console.log('🚀 Testing CCJ Mode-Aware Render Layer - ENCINITAS T-SHIRT');
+  console.log('========================================================');
 
   try {
     // Configure FAL client
@@ -43,58 +43,58 @@ async function testAllModes() {
     configureFilesManager(process.env.GEMINI_API_KEY);
     console.log('✅ Files Manager configured - Files API ready for 0 token usage');
 
-    // Sample facts for hemd shirt (consistent across modes)
+    // Sample facts for encinitas t-shirt (consistent across modes)
     const facts: FactsV3 = {
-      category_generic: 'shirt',
-      silhouette: 'classic-collar-long-sleeve',
+      category_generic: 't-shirt',
+      silhouette: 'crew-neck-short-sleeve',
       pattern: 'solid',
       material: 'cotton',
-      weave_knit: 'woven',
-      drape_stiffness: 0.4,
+      weave_knit: 'knit',
+      drape_stiffness: 0.3,
       transparency: 'opaque',
       surface_sheen: 'matte',
       edge_finish: 'standard',
       print_scale: 'as_seen',
       framing_margin_pct: 6,
       palette: {
-        dominant_hex: '#2E5BBA', // Blue
+        dominant_hex: '#000000', // Black
         accent_hex: '#FFFFFF',
         pattern_hexes: [],
-        trim_hex: '#FFFFFF'
+        trim_hex: '#000000'
       },
       color_precision: {
-        primary_hex: '#2E5BBA',
+        primary_hex: '#000000',
         secondary_hex: '#FFFFFF',
         accuracy_score: 0.95
       },
       fabric_behavior: {
-        drape_characteristic: 'structured',
-        weight_class: 'medium',
-        stretch_capability: 'none',
-        wrinkle_resistance: 'moderate'
+        drape_characteristic: 'soft',
+        weight_class: 'light',
+        stretch_capability: 'moderate',
+        wrinkle_resistance: 'low'
       },
       construction_precision: {
         stitch_density: 'standard',
-        overall_construction_grade: 'high'
+        overall_construction_grade: 'good'
       },
       labels_found: [
         {
-          text: 'HEMD BRAND',
+          text: 'ENCINITAS',
           type: 'brand_label',
           preserve: true,
           priority: 'critical'
         }
       ],
       interior_analysis: {
-        visible_regions: ['neckline', 'cuffs', 'hem'],
-        edge_thickness_note: 'standard',
+        visible_regions: ['neckline', 'sleeves', 'hem'],
+        edge_thickness_note: 'thin',
         lining_present: false,
         pattern_inside: false,
         texture_inside: 'cotton',
         visibility_confidence: 0.8
       },
       hollow_regions: {
-        list: ['neckline', 'cuffs', 'hem'],
+        list: ['neckline', 'sleeves', 'hem'],
         depth_style: 'standard',
         must_render: true,
         shadow_policy: 'subtle',
@@ -102,10 +102,10 @@ async function testAllModes() {
       },
       construction_details: {
         seams: 'visible',
-        closures: 'button_placket',
-        collar_neckline: 'classic_collar',
+        closures: 'none',
+        collar_neckline: 'crew_neck',
         pockets: 'none',
-        special_features: 'button_cuffs'
+        special_features: 'short_sleeves'
       },
       qa_targets: {
         deltaE_max: 3,
@@ -115,6 +115,10 @@ async function testAllModes() {
       },
       safety: {
         must_not: ['humans', 'mannequins', 'props', 'reflections']
+      },
+      visual_references: {
+        primary: imagePath,
+        aux: []
       }
     };
 
@@ -123,141 +127,133 @@ async function testAllModes() {
       ban: ['mannequins', 'humans', 'props', 'reflections', 'long_shadows']
     };
 
-    // Prepare image for Files API (optimized token usage)
+    // Prepare image for Files API
     console.log('\n📤 Preparing image for Files API...');
-    const primaryFileUri = await prepareImageForModeRender(imagePath, 'mode-test');
-    console.log('✅ Image prepared:', primaryFileUri.startsWith('https://') ? 'Files API URI (0 tokens)' : 'Base64 fallback (high tokens)');
+    const primaryFileUri = await prepareImageForModeRender(imagePath, 'encinitas-test');
+    console.log('✅ Image prepared:', primaryFileUri.startsWith('https://generativelanguage.googleapis.com') ? 'Files API URI (0 tokens)' : 'Base64 fallback');
 
-    // Test all render modes
+    // Test all modes
     const modes: RenderType[] = ['ghost', 'flatlay', 'on_model', 'vton'];
     const results = [];
+    const startTime = Date.now();
 
     for (const mode of modes) {
       console.log(`\n🎨 Testing ${mode.toUpperCase()} mode...`);
       const modeStartTime = Date.now();
-      const sessionId = `ccj-modes-${mode}-${Date.now()}`;
 
       try {
         const imageBuffer = await generateCCJRender(
           facts,
           control,
           primaryFileUri,
-          [], // no aux refs for this test
+          [], // no aux images
           mode,
-          sessionId,
+          `encinitas-${mode}-${Date.now()}`,
           '4:5'
         );
 
-        const modeDuration = Date.now() - modeStartTime;
-        console.log(`✅ ${mode.toUpperCase()} mode completed in ${modeDuration}ms`);
+        const processingTime = Date.now() - modeStartTime;
+        console.log(`✅ ${mode.toUpperCase()} mode completed in ${processingTime}ms`);
         console.log(`   • Image size: ${imageBuffer.length.toLocaleString()} bytes`);
 
-        // Save individual results locally
+        // Save locally
         const timestamp = Date.now();
-        const outputPath = `ccj-modes-${mode}-${timestamp}.png`;
-        fs.writeFileSync(outputPath, imageBuffer);
+        const localPath = `ccj-encinitas-${mode}-${timestamp}.png`;
+        fs.writeFileSync(localPath, imageBuffer);
+        console.log(`   • Saved locally: ${localPath}`);
 
-        // Upload to FAL storage for permanent URL
-        let renderUrl: string;
-        try {
-          const imageDataUrl = `data:image/png;base64,${imageBuffer.toString('base64')}`;
-          renderUrl = await uploadImageToFalStorage(imageDataUrl);
-          console.log(`   • FAL Storage URL: ${renderUrl}`);
-        } catch (falError) {
-          console.warn(`   • FAL upload failed, using data URL: ${falError}`);
-          renderUrl = `data:image/png;base64,${imageBuffer.toString('base64')}`;
-        }
+        // Upload to FAL storage
+        console.log('Uploading generated image to FAL storage...');
+        const imageDataUrl = `data:image/png;base64,${imageBuffer.toString('base64')}`;
+        const falUrl = await uploadImageToFalStorage(imageDataUrl);
+        console.log(`   • FAL Storage URL: ${falUrl}`);
 
         results.push({
           mode,
           success: true,
-          processingTime: modeDuration,
+          processingTime,
           imageSize: imageBuffer.length,
-          outputPath,
-          renderUrl,
-          sessionId
+          localPath,
+          falUrl
         });
 
-        console.log(`   • Saved locally: ${outputPath}`);
-
       } catch (error: any) {
-        const modeDuration = Date.now() - modeStartTime;
-        console.error(`❌ ${mode.toUpperCase()} mode failed in ${modeDuration}ms:`, error.message);
-        
+        const processingTime = Date.now() - modeStartTime;
+        console.error(`❌ ${mode.toUpperCase()} mode failed in ${processingTime}ms:`, error.message);
         results.push({
           mode,
           success: false,
-          processingTime: modeDuration,
-          error: error.message,
-          sessionId
+          processingTime,
+          error: error.message
         });
       }
     }
 
     // Summary
-    const successfulModes = results.filter(r => r.success).length;
-    const totalModes = modes.length;
-    const averageTime = results.reduce((sum, r) => sum + r.processingTime, 0) / totalModes;
+    const totalTime = Date.now() - startTime;
+    const successful = results.filter(r => r.success).length;
+    const failed = results.length - successful;
 
     console.log('\n📊 Mode Test Results Summary:');
     console.log('============================');
-    console.log(`   • Total modes tested: ${totalModes}`);
-    console.log(`   • Successful: ${successfulModes}`);
-    console.log(`   • Failed: ${totalModes - successfulModes}`);
-    console.log(`   • Success rate: ${(successfulModes / totalModes * 100).toFixed(0)}%`);
-    console.log(`   • Average processing time: ${averageTime.toFixed(0)}ms`);
+    console.log(`   • Total modes tested: ${results.length}`);
+    console.log(`   • Successful: ${successful}`);
+    console.log(`   • Failed: ${failed}`);
+    console.log(`   • Success rate: ${(successful / results.length * 100).toFixed(0)}%`);
+    console.log(`   • Total processing time: ${totalTime}ms`);
+
+    if (successful > 0) {
+      const avgTime = results.filter(r => r.success).reduce((sum, r) => sum + r.processingTime, 0) / successful;
+      console.log(`   • Average processing time: ${avgTime.toFixed(0)}ms`);
+    }
 
     console.log('\n✅ Successful Modes:');
     results.filter(r => r.success).forEach(r => {
-      console.log(`   • ${r.mode.toUpperCase()}: ${r.processingTime}ms, ${r.imageSize!.toLocaleString()} bytes`);
-      console.log(`     Local: ${r.outputPath}`);
-      console.log(`     FAL URL: ${r.renderUrl}`);
+      console.log(`   • ${r.mode.toUpperCase()}: ${r.processingTime}ms, ${r.imageSize.toLocaleString()} bytes`);
+      console.log(`     Local: ${r.localPath}`);
+      console.log(`     FAL URL: ${r.falUrl}`);
     });
 
-    if (successfulModes < totalModes) {
+    if (failed > 0) {
       console.log('\n❌ Failed Modes:');
       results.filter(r => !r.success).forEach(r => {
         console.log(`   • ${r.mode.toUpperCase()}: ${r.processingTime}ms, Error: ${r.error}`);
       });
     }
 
-    // Save comprehensive results
-    const summaryFileName = `ccj-modes-test-summary-${Date.now()}.json`;
-    fs.writeFileSync(summaryFileName, JSON.stringify({
-      totalModes,
-      successfulModes,
-      failedModes: totalModes - successfulModes,
-      successRate: `${(successfulModes / totalModes * 100).toFixed(0)}%`,
-      averageProcessingTimeMs: averageTime,
+    // Save test summary
+    const summaryPath = `ccj-encinitas-modes-test-summary-${Date.now()}.json`;
+    fs.writeFileSync(summaryPath, JSON.stringify({
+      timestamp: new Date().toISOString(),
+      imagePath,
       facts,
       control,
-      results
+      results,
+      totalTime,
+      successful,
+      failed,
+      successRate: `${(successful / results.length * 100).toFixed(0)}%`
     }, null, 2));
-
-    console.log(`\n💾 Test summary saved to: ${summaryFileName}`);
+    console.log(`\n💾 Test summary saved to: ${summaryPath}`);
 
     console.log('\n🎯 Final Summary:');
-    console.log(`   • Mode-aware CCJ render layer tested: ${successfulModes}/${totalModes} modes successful`);
-    console.log(`   • Average processing time: ${averageTime.toFixed(0)}ms`);
+    console.log(`   • Encinitas t-shirt tested across ${results.length} modes`);
+    console.log(`   • Success rate: ${successful}/${results.length} (${(successful / results.length * 100).toFixed(0)}%)`);
     console.log('   • All modes use the same FactsV3 + ControlBlock inputs');
     console.log('   • Mode-specific system prompts and render instructions applied');
     console.log('   • Files API optimization for 0 input tokens on images');
     console.log('   • FAL storage integration for permanent image URLs');
-    
+
     console.log('\n🖼️ Generated Images:');
     results.filter(r => r.success).forEach(r => {
-      console.log(`   • ${r.mode.toUpperCase()}: ${r.renderUrl}`);
+      console.log(`   • ${r.mode.toUpperCase()}: ${r.falUrl}`);
     });
 
   } catch (error: any) {
-    console.error('❌ Mode test failed:', error);
-    if (error instanceof Error) {
-      console.error('Error message:', error.message);
-      console.error('Stack trace:');
-      console.error(error.stack);
-    }
+    console.error('❌ Test failed:', error.message);
+    console.error('Stack:', error.stack);
     process.exit(1);
   }
 }
 
-testAllModes();
+testAllModesEncinitas();

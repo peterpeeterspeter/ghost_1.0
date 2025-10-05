@@ -161,21 +161,28 @@ export function buildHints(facts: FactsV3, control: ControlBlock, mode: RenderTy
       deltaE_max: (facts?.color_precision as any)?.deltaE_max ?? 3,
       saturation_bias: 'neutral'
     },
-    material: facts?.construction_details?.material || {},
+    material: {
+      family: facts?.material || "unknown",
+      weave_knit: facts?.weave_knit || "unknown", 
+      weight: facts?.fabric_behavior?.weight_class || "unknown",
+      stretch: facts?.fabric_behavior?.stretch_capability || "unknown"
+    },
     fabric_behavior: {
-      drape: facts?.fabric_behavior?.drape || 'as_seen',
-      stiffness_0_1: facts?.fabric_behavior?.stiffness_0_1 ?? 0.35,
-      transparency: facts?.fabric_behavior?.transparency || 'opaque',
-      surface_sheen: facts?.fabric_behavior?.surface_sheen || 'matte',
-      microtexture: 'as_seen'
+      drape: facts?.fabric_behavior?.drape_characteristic || "as_seen",
+      stiffness_0_1: facts?.drape_stiffness ?? 0.4,
+      wrinkle_resistance: facts?.fabric_behavior?.wrinkle_resistance || "moderate",
+      transparency: facts?.transparency || "opaque",
+      surface_sheen: facts?.surface_sheen || "matte",
+      microtexture: "as_seen"
     },
     construction: {
-      seams: 'preserve',
-      edge_finish: 'standard',
-      closures: 'as_seen',
-      hardware: 'as_seen',
-      topstitching: 'preserve',
-      print_scale: 'as_seen'
+      seams: "preserve",
+      stitch_density: facts?.construction_precision?.stitch_density || "as_seen",
+      edge_finish: facts?.edge_finish || "as_seen",
+      closures: "as_seen",
+      hardware: "as_seen",
+      print_scale: facts?.print_scale || "as_seen",
+      topstitching: "preserve"
     },
     labels: {
       visible: 'preserve',
@@ -204,7 +211,7 @@ export function buildHints(facts: FactsV3, control: ControlBlock, mode: RenderTy
         occlusion: 'subtle',
         continuity: 'no_fill_no_flatten'
       },
-      notes: 'Ghost mannequin: show interior hollows, natural 3-D volume, clean alpha edges.'
+      notes: "Use exact geometry/color/texture from refs; do not fabricate absent elements."
     };
   }
 
@@ -217,7 +224,7 @@ export function buildHints(facts: FactsV3, control: ControlBlock, mode: RenderTy
       shadow: { style: 'none', intensity: 'none' },
       // no interior hints in flatlay
       interior: undefined,
-      notes: 'Flatlay: neat laydown, no mannequin volume, top-down camera, pure white background.'
+      notes: "Use exact geometry/color/texture from refs; do not fabricate absent elements."
     };
   }
 
@@ -229,7 +236,7 @@ export function buildHints(facts: FactsV3, control: ControlBlock, mode: RenderTy
       lighting: { studio_soft: true, white_balance: 'neutral' },
       shadow: { style: 'contact_only', intensity: 'low' },
       interior: { render_hollows: false },
-      notes: 'On-model look on neutral background (digital form), preserve true garment shape & drape.'
+      notes: "Use exact geometry/color/texture from refs; do not fabricate absent elements."
     };
   }
 
@@ -241,7 +248,7 @@ export function buildHints(facts: FactsV3, control: ControlBlock, mode: RenderTy
     lighting: { studio_soft: true, white_balance: 'match_subject' },
     shadow: { style: 'scene_consistent', intensity: 'match_subject' },
     interior: { render_hollows: false },
-    notes: 'VTO: transfer garment onto provided person reference; preserve scale & material behavior.'
+    notes: "Use exact geometry/color/texture from refs; do not fabricate absent elements."
   };
 }
 
