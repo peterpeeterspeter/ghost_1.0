@@ -27,6 +27,7 @@ FactsV3 + ControlBlock → CCJ Core Contract → CCJ Hints → Files API Upload 
 - **Files API Optimization**: 97% token reduction using Google Files API
 - **Hard Locks**: Guarantees ghost effect, interior visibility, and label preservation
 - **Batch Processing**: Supports batch operations with 100% success rate
+- **Mode-Aware Rendering**: Multiple render modes (ghost, flatlay, on-model, vton) with same inputs
 
 ## 🚀 Quick Start
 
@@ -56,6 +57,49 @@ npx tsx test-ccj-improved-v1-2.ts
 ```bash
 npx tsx test-ccj-batch-10.ts
 ```
+
+### Test Mode-Aware Rendering
+```bash
+npx tsx test-ccj-modes.ts
+```
+
+## 🎨 Rendering Modes
+
+The pipeline supports multiple rendering modes with a mode-aware CCJ render layer:
+
+### Mode-Aware CCJ Render Layer
+
+The new `ccj-modes.ts` provides a drop-in, mode-aware render system that reuses the same FactsV3 + ControlBlock analysis but switches render system prompts and hints to produce different output styles:
+
+```typescript
+import { generateCCJRender, type RenderType } from './lib/ghost/ccj-modes';
+
+// Ghost mannequin (default e-commerce)
+await generateCCJRender(facts, control, primaryFileUri, [], 'ghost', sessionId, '4:5');
+
+// Flatlay (same facts!)
+await generateCCJRender(facts, control, primaryFileUri, [], 'flatlay', sessionId, '4:5');
+
+// On-model (digital form)
+await generateCCJRender(facts, control, primaryFileUri, auxRefs, 'on_model', sessionId);
+
+// VTO (virtual try-on)
+await generateCCJRender(facts, control, primaryFileUri, [personRefUri], 'vton', sessionId);
+```
+
+### Available Modes
+
+- **Ghost Mannequin** (`ghost`): Invisible form with interior hollows visible, natural 3D volume
+- **Flatlay** (`flatlay`): Top-down product photography, no mannequin volume
+- **On-Model** (`on_model`): Digital form rendering, neutral background
+- **Virtual Try-On** (`vton`): Garment transfer to person reference
+
+### Mode-Specific Features
+
+- **Ghost**: Interior hollows, subtle occlusion, contact shadows only
+- **Flatlay**: Top-down camera, no volume, neat laydown
+- **On-Model**: 3D frontal view, digital form, true garment shape
+- **VTO**: Scene-consistent lighting, scale preservation, material behavior
 
 ## 📊 Performance
 
@@ -116,12 +160,15 @@ Rich steering data including:
 packages/ghost-pipeline/
 ├── lib/ghost/
 │   ├── ccj-improved.ts          # Core CCJ pipeline implementation
+│   ├── ccj-modes.ts             # Mode-aware CCJ render layer
+│   ├── ccj-modes-integration.ts # Integration examples and utilities
 │   ├── consolidation.ts         # Analysis consolidation logic
 │   ├── files-manager.ts         # Files API management
 │   ├── fal.ts                   # FAL.AI integration
 │   └── gemini.ts                # Gemini API integration
 ├── test-ccj-improved-v1-2.ts    # Main test script
 ├── test-ccj-batch-10.ts         # Batch testing script
+├── test-ccj-modes.ts            # Mode-aware rendering test
 ├── CCJ_IMPROVEMENTS.md          # Detailed improvements documentation
 └── README.md                    # This file
 ```
