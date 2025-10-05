@@ -10,7 +10,7 @@ import {
   type ControlBlock,
   type RenderType 
 } from './lib/ghost/ccj-modes';
-import { configureFalClient } from './lib/ghost/fal';
+import { configureFalClient, uploadImageToFalStorage } from './lib/ghost/fal';
 import { configureFilesManager } from './lib/ghost/files-manager';
 import path from 'path';
 import fs from 'fs';
@@ -152,10 +152,21 @@ async function testAllModes() {
         console.log(`✅ ${mode.toUpperCase()} mode completed in ${modeDuration}ms`);
         console.log(`   • Image size: ${imageBuffer.length.toLocaleString()} bytes`);
 
-        // Save individual results
+        // Save individual results locally
         const timestamp = Date.now();
         const outputPath = `ccj-modes-${mode}-${timestamp}.png`;
         fs.writeFileSync(outputPath, imageBuffer);
+
+        // Upload to FAL storage for permanent URL
+        let renderUrl: string;
+        try {
+          const imageDataUrl = `data:image/png;base64,${imageBuffer.toString('base64')}`;
+          renderUrl = await uploadImageToFalStorage(imageDataUrl);
+          console.log(`   • FAL Storage URL: ${renderUrl}`);
+        } catch (falError) {
+          console.warn(`   • FAL upload failed, using data URL: ${falError}`);
+          renderUrl = `data:image/png;base64,${imageBuffer.toString('base64')}`;
+        }
 
         results.push({
           mode,
@@ -163,10 +174,11 @@ async function testAllModes() {
           processingTime: modeDuration,
           imageSize: imageBuffer.length,
           outputPath,
+          renderUrl,
           sessionId
         });
 
-        console.log(`   • Saved to: ${outputPath}`);
+        console.log(`   • Saved locally: ${outputPath}`);
 
       } catch (error: any) {
         const modeDuration = Date.now() - modeStartTime;
@@ -198,7 +210,8 @@ async function testAllModes() {
     console.log('\n✅ Successful Modes:');
     results.filter(r => r.success).forEach(r => {
       console.log(`   • ${r.mode.toUpperCase()}: ${r.processingTime}ms, ${r.imageSize!.toLocaleString()} bytes`);
-      console.log(`     Output: ${r.outputPath}`);
+      console.log(`     Local: ${r.outputPath}`);
+      console.log(`     FAL URL: ${r.renderUrl}`);
     });
 
     if (successfulModes < totalModes) {
@@ -229,6 +242,12 @@ async function testAllModes() {
     console.log('   • All modes use the same FactsV3 + ControlBlock inputs');
     console.log('   • Mode-specific system prompts and render instructions applied');
     console.log('   • Files API optimization for 0 input tokens on images');
+    console.log('   • FAL storage integration for permanent image URLs');
+    
+    console.log('\n🖼️ Generated Images:');
+    results.filter(r => r.success).forEach(r => {
+      console.log(`   • ${r.mode.toUpperCase()}: ${r.renderUrl}`);
+    });
 
   } catch (error: any) {
     console.error('❌ Mode test failed:', error);
