@@ -196,22 +196,73 @@ export function buildHints(facts: FactsV3, control: ControlBlock, mode: RenderTy
 
   // Mode-specific adjustments
   if (mode === 'ghost') {
+    // Use EXACT hardcoded ghost structure for optimal quality
     return {
-      ...common,
+      v: 'gm-hints-1.2',  // Same version as hardcoded
       view: 'front',
       framing: { margin_pct: 6, center: true },
       lighting: { studio_soft: true, white_balance: 'neutral', avoid_hotspots: true },
       shadow: { style: 'contact_only', intensity: 'very_low' },
+
+      color_precision: {
+        primary_hex: facts?.color_precision?.primary_hex || facts?.palette?.dominant_hex,
+        secondary_hex: facts?.color_precision?.secondary_hex || facts?.palette?.accent_hex,
+        trim_hex: facts?.palette?.trim_hex,
+        deltaE_max: facts?.qa_targets?.deltaE_max ?? 3,
+        saturation_bias: 'neutral'
+      },
+
+      material: {
+        family: facts?.material || 'unknown',
+        weave_knit: facts?.weave_knit || 'unknown',
+        weight: facts?.fabric_behavior?.weight_class || 'unknown',
+        stretch: facts?.fabric_behavior?.stretch_capability || 'unknown'
+      },
+
+      fabric_behavior: {
+        drape: facts?.fabric_behavior?.drape_characteristic || 'as_seen',
+        stiffness_0_1: facts?.drape_stiffness ?? 0.4,
+        wrinkle_resistance: facts?.fabric_behavior?.wrinkle_resistance || 'moderate',
+        transparency: facts?.transparency || 'opaque',
+        surface_sheen: facts?.surface_sheen || 'matte',
+        microtexture: 'as_seen'
+      },
+
+      construction: {
+        seams: 'preserve',
+        stitch_density: facts?.construction_precision?.stitch_density || 'as_seen',
+        edge_finish: facts?.edge_finish || 'as_seen',
+        closures: 'as_seen',
+        hardware: 'as_seen',
+        print_scale: facts?.print_scale || 'as_seen',
+        topstitching: 'preserve'
+      },
+
       interior: {
         render_hollows: true,
-        regions: facts?.interior_analysis?.visible_regions?.length
-          ? facts.interior_analysis.visible_regions
-          : ['neckline','sleeves','hem','vents'],
+        regions: ['neckline', 'sleeves', 'hem', 'vents'],
         edge_thickness_mm: 2,
         occlusion: 'subtle',
         continuity: 'no_fill_no_flatten'
       },
-      notes: "Use exact geometry/color/texture from refs; do not fabricate absent elements."
+
+      labels: {
+        visible: 'preserve',
+        placement: 'as_seen',
+        ocr_text: 'do_not_invent',
+        known_texts: (facts?.labels_found || []).map((l:any) => l?.text).filter(Boolean),
+        critical: (facts?.labels_found || []).some((l:any) => l?.priority === 'critical') ? 'yes' : 'unknown'
+      },
+
+      qa: {
+        min_resolution_px: facts?.qa_targets?.min_resolution_px ?? 2000,
+        symmetry_tol_pct: facts?.qa_targets?.symmetry_tolerance_pct ?? 3,
+        edge_halo_max_pct: facts?.qa_targets?.edge_halo_max_pct ?? 1
+      },
+
+      safety: facts?.safety || { must_not: [] },
+
+      notes: 'Use exact geometry/color/texture from refs; do not fabricate absent elements.'
     };
   }
 
@@ -252,25 +303,68 @@ export function buildHints(facts: FactsV3, control: ControlBlock, mode: RenderTy
   };
 }
 
-// System instruction (short & durable)
-export const SYSTEM_GM = [
-  'You are a commercial e-commerce product photographer. Return IMAGE ONLY.',
-  'Defaults: pure #FFFFFF seamless background; soft even studio light; neutral white balance; centered composition.',
-  'Fidelity: match geometry, colors, textures, seams, labels exactly to references. Do not invent.',
-  'No humans, mannequins, props, reflections, backgrounds, or added graphics/text.'
-].join('\n');
+// System instruction (short & durable) - SAME AS HARDCODED GHOST
+export const SYSTEM_GM_GHOST = `You are a commercial product photographer. Return IMAGE ONLY.
+Defaults: pure #FFFFFF background, soft even studio light, neutral WB, centered catalog framing.
+Fidelity: match textures, seams, stitching, trims, and visible labels exactly to references. Do not invent.
+No humans, mannequins, props, reflections, gradients, or added text/graphics.
+If ambiguous, choose neutral e-commerce rendering that keeps all constraints true.`.trim();
 
-// Render instruction (swaps by mode)
+// Mode-specific system instructions
+export const SYSTEM_GM_FLATLAY = `You are a commercial flatlay product photographer. Return IMAGE ONLY.
+Defaults: pure #FFFFFF background, top-down camera angle, even soft lighting, neutral white balance.
+Fidelity: match colors, textures, patterns, and labels exactly to references. Do not invent.
+No humans, mannequins, props, reflections, shadows, or added graphics/text.
+Create neat, organized flatlay arrangement with clean edges.`.trim();
+
+export const SYSTEM_GM_ON_MODEL = `You are a commercial on-model product photographer. Return IMAGE ONLY.
+Defaults: pure #FFFFFF background, 3D frontal view, soft studio lighting, neutral white balance.
+Fidelity: match colors, textures, patterns, and labels exactly to references. Do not invent.
+No humans, mannequins, props, reflections, or added graphics/text.
+Render garment on digital form with realistic drape and proportions.`.trim();
+
+export const SYSTEM_GM_VTON = `You are a commercial virtual try-on photographer. Return IMAGE ONLY.
+Defaults: match subject background, 3D frontal view, scene-consistent lighting.
+Fidelity: match colors, textures, patterns, and labels exactly to references. Do not invent.
+No added graphics/text. Preserve subject's pose and background context.
+Transfer garment realistically onto provided person reference.`.trim();
+
+// Legacy export for backward compatibility
+export const SYSTEM_GM = SYSTEM_GM_GHOST;
+
+// Get system instruction based on mode
+export function getSystemInstruction(mode: RenderType): string {
+  switch (mode) {
+    case 'ghost': return SYSTEM_GM_GHOST;
+    case 'flatlay': return SYSTEM_GM_FLATLAY;
+    case 'on_model': return SYSTEM_GM_ON_MODEL;
+    case 'vton': return SYSTEM_GM_VTON;
+    default: return SYSTEM_GM_GHOST;
+  }
+}
+
+// Render instruction (swaps by mode) - SAME AS HARDCODED GHOST FOR GHOST MODE
 export function buildRenderInstruction(mode: RenderType): string {
   if (mode === 'ghost') {
-    return [
-      'TASK: Lift the flatlay garment into a 3-D ghost-mannequin product image.',
-      'Ghost effect (hard): natural invisible form with realistic volume; show interior hollows (neckline, cuffs, hems, vents) with subtle occlusion and real edge thickness.',
-      'Authority: first image is the single source of truth for geometry, micro-texture, pattern, and color.',
-      'Fidelity (hard): clean alpha edges; pure #FFFFFF background only; preserve seams, stitching, trims, closures, and label text exactly as seen.',
-      'If conflicts, prioritize: (1) safety, (2) image geometry/texture, (3) core contract color/parts, (4) hints.',
-      'OUTPUT: IMAGE ONLY.'
-    ].join('\n');
+    return `TASK: Lift the flatlay garment into a 3-D ghost-mannequin product image.
+
+Authority:
+• Use the first image as the single source of truth for geometry, micro-texture, pattern, and color.
+• If a second image exists, use it only for global scale/proportion hints.
+
+Ghost mannequin (hard):
+• Natural invisible form/volume; show interior hollows (neckline, cuffs, hems, vents) with subtle occlusion and real edge thickness.
+• Sleeves remain cylindrical; hem perfectly level.
+• Preserve visible labels/logos exactly as seen (do not invent or relocate text).
+
+Fidelity (hard):
+• Match colors precisely; preserve seam lines, stitching, trims, closures, and print scale.
+• Clean alpha edges, no halos; background is pure #FFFFFF only.
+• Only a very soft, tight contact shadow (no long/directional shadows).
+
+Follow the attached JSON CONTRACT (binding) and JSON HINTS (secondary). If conflicts, prioritize:
+1) safety, 2) image geometry/texture, 3) contract color/parts, 4) hints.
+OUTPUT: IMAGE ONLY.`.trim();
   }
 
   if (mode === 'flatlay') {
@@ -307,7 +401,8 @@ export function buildGeminiParts(
   auxFileUris: string[],
   ccjCore: CCJCore,
   ccjHints: CCJHints,
-  renderInstruction: string
+  renderInstruction: string,
+  systemInstruction: string
 ) {
   const parts: any[] = [];
 
@@ -319,8 +414,8 @@ export function buildGeminiParts(
     parts.push({ fileData: { fileUri: aux, mimeType: 'image/jpeg' } });
   }
 
-  // 3) System instruction
-  parts.push({ text: SYSTEM_GM });
+  // 3) System instruction (mode-specific)
+  parts.push({ text: systemInstruction });
 
   // 4) Render instruction (mode-specific)
   parts.push({ text: renderInstruction });
@@ -347,7 +442,8 @@ export async function generateCCJRender(
   const ccjCore = buildCCJCore(facts, primaryFileUri, auxFileUris, mode, sessionId);
   const ccjHints = buildHints(facts, control, mode);
   const renderInstruction = buildRenderInstruction(mode);
-  const parts = buildGeminiParts(primaryFileUri, auxFileUris, ccjCore, ccjHints, renderInstruction);
+  const systemInstruction = getSystemInstruction(mode);
+  const parts = buildGeminiParts(primaryFileUri, auxFileUris, ccjCore, ccjHints, renderInstruction, systemInstruction);
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   const model = genAI.getGenerativeModel({
