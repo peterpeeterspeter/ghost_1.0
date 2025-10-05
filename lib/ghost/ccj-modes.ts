@@ -101,7 +101,8 @@ export function buildCCJCore(
   primaryFileUri: string,
   auxFileUris: string[],
   mode: RenderType,
-  sessionId: string
+  sessionId: string,
+  personFileUri?: string  // NEW: Optional person reference for VTON
 ): CCJCore {
   const colors = pickColors(facts);
   const showInteriors = (mode === 'ghost'); // hard default; override if you need
@@ -132,16 +133,23 @@ export function buildCCJCore(
     },
 
     rules: {
-      bg: defaultHex,
+      bg: mode === 'vton' ? 'match_subject' : defaultHex,
+      vton: (mode === 'vton'),  // NEW: VTON mode flag
       mode,
       show_interiors: showInteriors,
-      on_model_human: (mode === 'on_model'),  // NEW: hard lock for human models
+      on_model_human: (mode === 'on_model'),  // hard lock for human models
       labels_lock: 'keep_legible_exact',
       authority: {
-        geometry_texture: 'refs.primary',
-        color_source: 'refs.primary',
-        scale_proportion: 'refs.aux|optional'
-      }
+        geometry_texture: mode === 'vton' ? 'refs.garment' : 'refs.primary',
+        color_source: mode === 'vton' ? 'refs.garment' : 'refs.primary',
+        scale_proportion: mode === 'vton' ? 'refs.person' : 'refs.aux|optional',
+        scene_pose_occlusion: mode === 'vton' ? 'refs.person' : undefined,
+        texture_and_color: mode === 'vton' ? 'refs.garment' : undefined
+      },
+      ...(mode === 'vton' ? {
+        layering_policy: 'fit_under_or_replace',
+        fit_priority: ['neckline','shoulders','sleeves','hem']
+      } : {})
     },
 
     // NEW: model specification for on_model mode
@@ -159,7 +167,11 @@ export function buildCCJCore(
 
     refs: {
       primary: primaryFileUri,
-      aux: auxFileUris
+      aux: auxFileUris,
+      ...(mode === 'vton' && personFileUri ? {
+        person: personFileUri,
+        garment: primaryFileUri
+      } : {})
     }
   };
 }
@@ -205,7 +217,21 @@ export function buildHints(facts: FactsV3, control: ControlBlock, mode: RenderTy
       critical: (facts?.labels_found || []).some(l => l.priority === 'critical') ? 'yes' : 'auto'
     },
     qa: { min_resolution_px: 2000, symmetry_tol_pct: 3, edge_halo_max_pct: 1 },
-    safety: { must_not: control?.ban || ['humans','mannequins','props','reflections'] }
+    safety: (() => {
+      // Mode-specific safety rules
+      if (mode === 'vton' || mode === 'on_model') {
+        // Allow humans for VTON and on_model
+        return { 
+          must_not: ['props','reflections','added_text'],
+          disallow: ['minors','sexualized_styling','see-through nudity']
+        };
+      } else {
+        // Ban humans for ghost and flatlay
+        return { 
+          must_not: ['humans','mannequins','props','reflections','added_text']
+        };
+      }
+    })()
   };
 
   // Mode-specific adjustments
@@ -380,10 +406,37 @@ export function buildHints(facts: FactsV3, control: ControlBlock, mode: RenderTy
     ...common,
     view: '3d_frontal',
     framing: { margin_pct: 8, center: true },
-    lighting: { studio_soft: true, white_balance: 'match_subject' },
+    lighting: { white_balance: 'match_subject', scene_consistent: true },
     shadow: { style: 'scene_consistent', intensity: 'match_subject' },
+    
+    // NEW: Fit and layering guidance
+    fit: {
+      size_strategy: 'proportional_to_pose',
+      warp_allowance: 'natural_drape',
+      tuck_rules: 'under_outer_layers',
+      collision_areas: ['hair','skin','hands','accessories'],
+      preserve_skin_hair_hands: true
+    },
+    
+    compatibility: {
+      matrix: 'auto',
+      fallback: 'replace_visible_top_if_conflict'
+    },
+    
+    color_precision: { deltaE_max: 3, saturation_bias: 'neutral' },
+    fabric_behavior: {
+      drape: 'as_seen',
+      stiffness_0_1: 0.4,
+      wrinkle_resistance: 'moderate',
+      transparency: 'as_seen',
+      surface_sheen: 'as_seen'
+    },
+    
+    qa: { min_resolution_px: 1600, edge_halo_max_pct: 1 },
+    safety: { must_not: ['props','reflections','added_text'] }, // Allow humans
+    
     interior: { render_hollows: false },
-    notes: "Use exact geometry/color/texture from refs; do not fabricate absent elements."
+    notes: 'Use person for pose/occlusion/background; garment for texture/color/print. Never paste garment over outer layers.'
   };
 }
 
@@ -409,11 +462,10 @@ Fidelity: match garment colors, textures, seams, trims, logos exactly to referen
 Occlusion: keep garment fully visible (no crossed arms/hair blocking key details); labels legible when present.
 Safety: no minors; no explicit nudity or fetish styling; respectful depiction.`.trim();
 
-export const SYSTEM_GM_VTON = `You are a commercial virtual try-on photographer. Return IMAGE ONLY.
-Defaults: match subject background, 3D frontal view, scene-consistent lighting.
-Fidelity: match colors, textures, patterns, and labels exactly to references. Do not invent.
-No added graphics/text. Preserve subject's pose and background context.
-Transfer garment realistically onto provided person reference.`.trim();
+export const SYSTEM_GM_VTON = `You are a commercial virtual try-on compositor. Return IMAGE ONLY.
+Use the person image as authority for pose, lighting, occlusion, and background.
+Use the garment image as authority for texture, print scale, and color.
+Preserve subject identity (hair, skin, hands) and scene. Do not add graphics/text.`.trim();
 
 // Legacy export for backward compatibility
 export const SYSTEM_GM = SYSTEM_GM_GHOST;
@@ -506,9 +558,22 @@ OUTPUT: IMAGE ONLY.`.trim();
 
   // vton
   return [
-    'TASK: Transfer the analyzed garment onto the provided person reference realistically.',
-    'Match scale, fabric behavior, and lighting to the subject; avoid distortions and artifacts.',
-    'Fidelity (hard): preserve garment details and colors; keep background minimal/neutral unless the subject requires.',
+    'TASK: Transfer the garment naturally onto the person.',
+    '',
+    'Layering & Occlusion (hard):',
+    '• If the person wears an outer top, place the new garment UNDER it (tuck rules), or REPLACE the visible top if layering is impossible. Never paste on top of outer layers.',
+    '• Respect hair, skin, hands, and accessories as foreground; do not overpaint them.',
+    '• Align neckline, shoulder slope, sleeve length, and hem placement to the pose.',
+    '',
+    'Fidelity (hard):',
+    '• Copy exact colors, textures, seams, labels, and print scale from the garment reference.',
+    '• Maintain realistic drape consistent with pose and fabric stiffness.',
+    '• Keep scene lighting and shadows consistent with the person image.',
+    '',
+    'Authority order:',
+    '1) Person → pose, lighting, occlusion, background',
+    '2) Garment → texture, print, color',
+    '',
     'OUTPUT: IMAGE ONLY.'
   ].join('\n');
 }
@@ -520,29 +585,35 @@ export function buildGeminiParts(
   ccjCore: CCJCore,
   ccjHints: CCJHints,
   renderInstruction: string,
-  systemInstruction: string
+  systemInstruction: string,
+  mode: RenderType
 ) {
   const parts: any[] = [];
 
-  // 1) Primary image first (grounding)
-  parts.push({ fileData: { fileUri: primaryFileUri, mimeType: 'image/jpeg' } });
-
-  // 2) Optional aux references (if any)
-  for (const aux of (auxFileUris || [])) {
-    parts.push({ fileData: { fileUri: aux, mimeType: 'image/jpeg' } });
+  if (mode === 'vton') {
+    // VTON: Person first, then garment
+    const personUri = ccjCore.refs?.person;
+    const garmentUri = ccjCore.refs?.garment || primaryFileUri;
+    
+    if (!personUri) {
+      throw new Error('VTON mode requires person reference in CCJ Core');
+    }
+    
+    parts.push({ fileData: { fileUri: personUri, mimeType: 'image/jpeg' } });   // 1) PERSON
+    parts.push({ fileData: { fileUri: garmentUri, mimeType: 'image/jpeg' } });  // 2) GARMENT
+  } else {
+    // Other modes: Garment first, then aux
+    parts.push({ fileData: { fileUri: primaryFileUri, mimeType: 'image/jpeg' } });  // 1) PRIMARY
+    for (const aux of (auxFileUris || [])) {
+      parts.push({ fileData: { fileUri: aux, mimeType: 'image/jpeg' } });  // 2+) AUX
+    }
   }
 
-  // 3) System instruction (mode-specific)
-  parts.push({ text: systemInstruction });
-
-  // 4) Render instruction (mode-specific)
-  parts.push({ text: renderInstruction });
-
-  // 5) CCJ Core (binding)
-  parts.push({ text: JSON.stringify(ccjCore) });
-
-  // 6) Hints (secondary steering)
-  parts.push({ text: JSON.stringify(ccjHints) });
+  // Common parts for all modes
+  parts.push({ text: systemInstruction });                                    // 3) SYSTEM
+  parts.push({ text: renderInstruction });                                    // 4) RENDER
+  parts.push({ text: JSON.stringify(ccjCore) });                             // 5) CORE
+  parts.push({ text: JSON.stringify(ccjHints) });                            // 6) HINTS
 
   return parts;
 }
@@ -555,13 +626,20 @@ export async function generateCCJRender(
   auxFileUris: string[],      // optional refs (e.g., personless A)
   mode: RenderType,
   sessionId: string,
+  personFileUri?: string,     // NEW: Optional person reference for VTON
   aspectRatio: '4:5'|'1:1'|'16:9'|'3:4'|'2:3' = '4:5'
 ): Promise<Buffer> {
-  const ccjCore = buildCCJCore(facts, primaryFileUri, auxFileUris, mode, sessionId);
+  
+  // VTON validation
+  if (mode === 'vton' && !personFileUri) {
+    throw new Error('VTON mode requires personFileUri parameter');
+  }
+  
+  const ccjCore = buildCCJCore(facts, primaryFileUri, auxFileUris, mode, sessionId, personFileUri);
   const ccjHints = buildHints(facts, control, mode);
   const renderInstruction = buildRenderInstruction(mode);
   const systemInstruction = getSystemInstruction(mode);
-  const parts = buildGeminiParts(primaryFileUri, auxFileUris, ccjCore, ccjHints, renderInstruction, systemInstruction);
+  const parts = buildGeminiParts(primaryFileUri, auxFileUris, ccjCore, ccjHints, renderInstruction, systemInstruction, mode);
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
   const model = genAI.getGenerativeModel({
